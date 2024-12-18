@@ -22,7 +22,7 @@ L'application a pour but de gérer des contacts, leurs adresses, et de permettre
 **Pour Utiliser l'application: **
 Configuration et Installation
 ## 1. Prérequis
-# Vous devez vous assurez-vous d'avoir les éléments suivants installés sur votre machine pour utilisé l'application :
+### Vous devez vous assurez-vous d'avoir les éléments suivants installés sur votre machine pour utilisé l'application :
 
 Java Development Kit (JDK) : Version 11 ou supérieure.
 SQLite : Pour la gestion de la base de données.
@@ -30,17 +30,17 @@ Postman (facultatif) : Pour tester les endpoints REST.
 Un IDE (comme IntelliJ IDEA, Eclipse ou VS Code) : Pour exécuter et modifier le code.
 ## 2. Cloner le Projet
 
-# Récupérez le projet depuis le dépôt ou directement depuis les fichiers fournis :
+### Récupérez le projet depuis le dépôt ou directement depuis les fichiers fournis :
 
 git clone https://github.com/votre-depot/mes_chums.git
 ## 3. Configuration de la Base de Données
 
-# Vérifiez l'emplacement de la base de données SQLite :
+### Vérifiez l'emplacement de la base de données SQLite :
 
 Le fichier mes_chums.db doit être présent dans le répertoire suivant :
 src/main/resources/mes_chums.db
 
-# Structure de la Base de Données :
+### Structure de la Base de Données :
 
 Les tables principales sont Contact et Adresse.
 Voici a quoi ressemble la base de données :
@@ -67,7 +67,7 @@ CREATE TABLE "Adresse" (
 ## 4. Configuration de l'API de Géocodage
 L'application utilise l'API de Géocodage de Google Maps pour convertir les adresses en coordonnées GPS.
 
-# Obtenez une clé API Google :
+### Obtenez une clé API Google :
 
 Pour générer une clé API, il vous faut un compte Google cloud, ensuite activer l'api de Géocodage après, créer une clé api et finalement, l'ajouter à l'application.
 Ajoutez la clé dans le fichier GeolocalisationService :
@@ -77,6 +77,7 @@ Vérifiez les permissions API :
 Assurez-vous que la clé est activée pour les services suivants :
 Geocoding API
 Places API
+
 ## 5. Exécution de l'Application
 Compilez et exécutez le projet :
 
@@ -111,7 +112,7 @@ Corps (JSON) :
 }
 
 
-### Concepts Clés du Projet
+# Concepts Clés du Projet
 
 ## 1. Endpoints REST
 
@@ -394,7 +395,7 @@ public class ContactControlleur implements HttpHandler {
 }
 
 
-### 3. Mécanisme de Cache
+## 3. Mécanisme de Cache
 Le cache dans l'application est conçu pour améliorer les performances en évitant les envoies de requêtes répétées à la base de données. Le cache est utilisé pour gérer les contacts favoris et leurs coordonnées géographiques.
 
 Mise en Place du Cache
@@ -421,7 +422,7 @@ public void initialiserCache() {
     }
 }
 
-# Ajout d'un Contact Favori dans le Cache :
+### Ajout d'un Contact Favori dans le Cache :
 Lorsqu'un contact est marqué comme favori, il est ajouté au cache avec ses coordonnées.
 
 public void ajouterContactFavori(Contact contact) {
@@ -431,7 +432,7 @@ public void ajouterContactFavori(Contact contact) {
     contactsFavoris.put(contact, coords);
 }
 
-# Retrait d'un Contact Favori du Cache :
+### Retrait d'un Contact Favori du Cache :
 Lorsqu'un contact n'est plus favori, il est retiré du cache.
 
 public void retirerContactFavori(Contact contact) {
@@ -440,7 +441,7 @@ public void retirerContactFavori(Contact contact) {
 Maintien des Données à Jour
 Le cache est automatiquement mis à jour dans les cas suivants :
 
-# Ajout d'un Favori :
+### Ajout d'un Favori :
 Un contact est marqué comme favori via la méthode marquerCommeFavori.
 Le contact est ajouté au cache avec ses coordonnées.
 Exemple :
@@ -458,25 +459,25 @@ public void marquerCommeFavori(Integer id_contact, boolean isFavoris) {
     }
 }
 
-# Retrait d'un Favori :
+### Retrait d'un Favori :
 Le contact est mis à jour pour ne plus être favori et il est alors retiré du cache.
 Impact sur la Cache
 Ajout d'un Favori :
 
 Lorsque vous marquez un contact comme favori, ses coordonnées sont calculées et ajoutées au cache. Cela permet un accès plus rapide pour des opérations futures.
 
-# Retrait d'un Favori :
+### Retrait d'un Favori :
 Lorsqu'un contact perd son statut de favori, il est retiré du cache pour éviter de maintenir des données obsolètes.
 
 Cela garantit que seuls les contacts favoris sont présents dans le cache et que les données restent à jour.
 
-### Diagramme de Séquence
+# Diagramme de Séquence
 
 Voici le diagramme de séquence pour cacheServise :
 
 ![Diagramme de Séquence](diagrammedeséquence.png)
 
-### 4. Utilisation de Géolocalisation
+# 4. Utilisation de Géolocalisation
 L'application utilise l'API de géocodage de Google Maps pour convertir des adresses en coordonnées GPS (latitude et longitude). Ces coordonnées sont ensuite utilisées pour diverses fonctionnalités, telles que la recherche de contacts à proximité.
 
 ## Fonctionnement
@@ -601,7 +602,7 @@ if (rootNode.get("status").asText().equals("ZERO_RESULTS")) {
     System.out.println("Aucune coordonnée trouvée pour l'adresse : " + adresse);
 }
 
-### 5. Injection de Dépendances
+# 5. Injection de Dépendances
 L'injection de dépendances permet de simplifier et d'organiser le code d'une application. Elle consiste à fournir à une classe tout ce dont elle a besoin pour fonctionner, au lieu de laisser la classe elle-même créer ces éléments. 
 
 Exemple dans l'application
