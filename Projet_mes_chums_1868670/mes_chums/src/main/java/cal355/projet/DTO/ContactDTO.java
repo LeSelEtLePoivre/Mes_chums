@@ -1,25 +1,21 @@
 package cal355.projet.DTO;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import cal355.projet.Modèles.Adresse;
+import cal355.projet.Modèles.Contact;
+import java.util.ArrayList;
 import java.util.List;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ContactDTO {
     private Integer id_contact;
     private String nom;
     private String prenom;
 
-    @JsonProperty("isFavoris")
     private boolean favoris;
 
     private List<AdresseDTO> adresses;
 
-    // Constructeur par défaut
     public ContactDTO() {
     }
 
-    // Constructeur avec arguments
     public ContactDTO(Integer id_contact, String nom, String prenom, boolean favoris, List<AdresseDTO> adresses) {
         this.id_contact = id_contact;
         this.nom = nom;
@@ -28,7 +24,6 @@ public class ContactDTO {
         this.adresses = adresses;
     }
 
-    // Getters et setters
     public Integer getId_contact() {
         return id_contact;
     }
@@ -67,5 +62,25 @@ public class ContactDTO {
 
     public void setAdresses(List<AdresseDTO> adresses) {
         this.adresses = adresses;
+    }
+
+    public Contact toEntiter() {
+        Contact contact = new Contact();
+        contact.setId_contact(this.id_contact);
+        contact.setNom(this.nom);
+        contact.setPrenom(this.prenom);
+        contact.setFavoris(this.favoris);
+
+        if (this.adresses != null) {
+            List<Adresse> listeAdresses = new ArrayList<>();
+            for (AdresseDTO aDto : this.adresses) {
+                listeAdresses.add(aDto.toEntiter());
+            }
+            contact.setAdresses(listeAdresses);
+        } else {
+            contact.setAdresses(new ArrayList<>());
+        }
+
+        return contact;
     }
 }

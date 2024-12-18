@@ -19,6 +19,10 @@ public class Adresse {
         this.id_contact = id_contact;
     }
 
+    public Adresse() {
+
+    }
+
     public Integer getId_adresse() {
         return id_adresse;
     }

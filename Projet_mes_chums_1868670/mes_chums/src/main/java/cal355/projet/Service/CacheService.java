@@ -1,25 +1,44 @@
 package cal355.projet.Service;
+import cal355.projet.DAO.ContactDAO;
 import cal355.projet.Modèles.Contact;
 import cal355.projet.Modèles.Coordonnees;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CacheService {
-    private Map<Contact, List<Coordonnees>> contactsFavoris = new HashMap<>();
+    private final ContactDAO contactDAO;
+    private final Map<Contact, List<Coordonnees>> contactsFavoris = new HashMap<>();
 
-    public void ajouterFavori(Contact contact, Coordonnees coordonnees) {
-        List<Coordonnees> coordonneesList = contactsFavoris.getOrDefault(contact, new ArrayList<>());
-        coordonneesList.add(coordonnees);
-        contactsFavoris.put(contact, coordonneesList);
+    public CacheService(ContactDAO contactDAO) {
+        this.contactDAO = contactDAO;
     }
-
-    public void supprimerFavori(Contact contact) {
-        contactsFavoris.remove(contact);
+    // Initialiser le cache
+    public void initialiserCache() {
+        // Récupérer les contacts favoris
+        List<Contact> favoris = trouverContactsFavoris();
+        for (Contact f : favoris) {
+            // Extraire leurs coordonnées
+            List<Coordonnees> coords = f.getAdresses().stream()
+                    .map(a -> a.getCoordonnees())
+                    .toList();
+            contactsFavoris.put(f, coords);
+        }
     }
-
-    public Map<Contact, List<Coordonnees>> getContactsFavoris() {
-        return contactsFavoris;
+    // Ajouter un contact favori au cache
+    public void ajouterContactFavori(Contact c) {
+        List<Coordonnees> coords = c.getAdresses().stream()
+                .map(a -> a.getCoordonnees())
+                .toList();
+        contactsFavoris.put(c, coords);
     }
+    // Retirer un contact favori du cache
+    public void retirerContactFavori(Contact c) {
+        contactsFavoris.remove(c);
+    }
+    // Obtenir les coordonnées d'un contact favori
+    private List<Contact> trouverContactsFavoris() {
+        return contactDAO.trouverContactsFavoris();
+    }
+    
 }

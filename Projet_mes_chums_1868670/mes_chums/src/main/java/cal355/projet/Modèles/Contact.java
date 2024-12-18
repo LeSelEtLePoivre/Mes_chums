@@ -1,18 +1,23 @@
 package cal355.projet.Modèles;
 import java.util.List;
 
+
 public class Contact {
     private Integer id_contact;
     private String nom;
     private String prenom;
-    private boolean isFavoris;
+    private Boolean isFavoris;
     private List<Adresse> adresses;
 
-    public Contact(Integer id_contact, String nom, String prenom, boolean isFavoris) {
+    public Contact(Integer id_contact, String nom, String prenom, Boolean isFavoris) {
         this.id_contact = id_contact;
         this.nom = nom;
         this.prenom = prenom;
         this.isFavoris = isFavoris;
+    }
+
+    public Contact(){
+
     }
 
     public Integer getId_contact() {

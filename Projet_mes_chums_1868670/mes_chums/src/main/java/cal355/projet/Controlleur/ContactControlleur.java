@@ -5,6 +5,7 @@ import cal355.projet.DTO.AdresseDTO;
 import cal355.projet.Modèles.Adresse;
 import cal355.projet.Mapper.ContactMapper;
 import cal355.projet.Modèles.Contact;
+import cal355.projet.Modèles.Coordonnees;
 import cal355.projet.Service.CacheService;
 import cal355.projet.Service.ContactService;
 import cal355.projet.Service.GeolocalisationService;
@@ -26,13 +27,13 @@ public class ContactControlleur implements HttpHandler {
     private final GeolocalisationService geolocalisationService;
     private final CacheService cacheService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    
     public ContactControlleur(ContactService contactService, GeolocalisationService geolocalisationService, CacheService cacheService) {
         this.contactService = contactService;
         this.geolocalisationService = geolocalisationService;
         this.cacheService = cacheService;
     }
-
+    // Methode pour traiter les requêtes
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
@@ -54,7 +55,7 @@ public class ContactControlleur implements HttpHandler {
                     handleDelete(exchange, path);
                     break;
                 default:
-                    exchange.sendResponseHeaders(405, -1); // Method Not Allowed
+                    exchange.sendResponseHeaders(405, -1);
                     break;
             }
         } catch (Exception e) {
@@ -62,31 +63,57 @@ public class ContactControlleur implements HttpHandler {
             exchange.sendResponseHeaders(500, -1); // Internal Server Error
         }
     }
-
+    // Methode pour traiter les requêtes GET
     private void handleGet(HttpExchange exchange, String path) throws IOException {
         if (path.equals("/contact")) {
             List<Contact> contacts = contactService.trouverTous();
             List<ContactDTO> contactDTOs = contacts.stream().map(ContactMapper::toDTO).collect(Collectors.toList());
-            String response = objectMapper.writeValueAsString(contactDTOs);
-            sendResponse(exchange, response, 200);
-        } else if (path.startsWith("/contact/")) {
-            Integer id = Integer.parseInt(path.split("/")[2]);
-            Contact contact = contactService.trouverParId(id);
-            if (contact != null) {
-                ContactDTO contactDTO = ContactMapper.toDTO(contact);
-                String response = objectMapper.writeValueAsString(contactDTO);
-                sendResponse(exchange, response, 200);
-            } else {
-                exchange.sendResponseHeaders(404, -1); // Not Found
+            sendResponse(exchange, objectMapper.writeValueAsString(contactDTOs), 200);
+
+        } else if (path.equals("/contact/favoris")) {
+            List<Contact> favoris = contactService.trouverContactsFavoris();
+            List<ContactDTO> favorisDTOs = favoris.stream().map(ContactMapper::toDTO).collect(Collectors.toList());
+            sendResponse(exchange, objectMapper.writeValueAsString(favorisDTOs), 200);
+
+        } else if (path.startsWith("/contact/proximite")) {
+            // Extraire les paramètres depuis la requête
+            String query = exchange.getRequestURI().getQuery();
+            double latitude = 0, longitude = 0, rayon = 0;
+
+            for (String param : query.split("&")) {
+                String[] keyValue = param.split("=");
+                if (keyValue.length == 2) {
+                    String key = keyValue[0];
+                    String value = keyValue[1];
+
+                    switch (key) {
+                        case "latitude":
+                            latitude = Double.parseDouble(value);
+                            break;
+                        case "longitude":
+                            longitude = Double.parseDouble(value);
+                            break;
+                        case "rayon":
+                            rayon = Double.parseDouble(value);
+                            break;
+                    }
+                }
             }
+
+            Coordonnees centre = new Coordonnees(latitude, longitude);
+            List<Contact> contactsProches = contactService.trouverContactsProches(centre, rayon);
+            List<ContactDTO> contactDTOs = contactsProches.stream()
+                    .map(ContactMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            sendResponse(exchange, objectMapper.writeValueAsString(contactDTOs), 200);
         }
     }
-
+    // Methode pour traiter les requêtes POST
     private void handlePost(HttpExchange exchange, String path) throws IOException {
         if (path.equals("/contact")) {
             ContactDTO contactDTO = objectMapper.readValue(exchange.getRequestBody(), ContactDTO.class);
-            Contact contact = ContactMapper.toEntity(contactDTO);
-            contactService.ajouterContact(contact.getId_contact(), contact.getNom(), contact.getPrenom(), contact.isFavoris());
+            contactService.ajouterContact(contactDTO);
             exchange.sendResponseHeaders(201, -1); // Created
         } else if (path.startsWith("/contact/") && path.endsWith("/adresse")) {
             Integer id = Integer.parseInt(path.split("/")[2]);
@@ -98,18 +125,18 @@ public class ContactControlleur implements HttpHandler {
             exchange.sendResponseHeaders(201, -1); // Created
         }
     }
-
+    // Methode pour traiter les requêtes PUT
     private void handlePut(HttpExchange exchange, String path) throws IOException {
         if (path.startsWith("/contact/")) {
             Integer id = Integer.parseInt(path.split("/")[2]);
             ContactDTO contactDTO = objectMapper.readValue(exchange.getRequestBody(), ContactDTO.class);
-            Contact contact = ContactMapper.toEntity(contactDTO);
+            Contact contact = ContactMapper.toEntiter(contactDTO);
             contact.setId_contact(id);
             contactService.marquerCommeFavori(id, contact.isFavoris());
             exchange.sendResponseHeaders(204, -1); // No Content
         }
     }
-
+    // Methode pour traiter les requêtes DELETE
     private void handleDelete(HttpExchange exchange, String path) throws IOException {
         if (path.startsWith("/contact/")) {
             Integer id = Integer.parseInt(path.split("/")[2]);
@@ -122,7 +149,7 @@ public class ContactControlleur implements HttpHandler {
             }
         }
     }
-
+    // Methode pour envoyer une réponse
     private void sendResponse(HttpExchange exchange, String response, int statusCode) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
         exchange.sendResponseHeaders(statusCode, response.getBytes(StandardCharsets.UTF_8).length);
